@@ -17,7 +17,7 @@
 - Backend: Go
 - Scraping: Colly / goquery
 - Export: JSON / CSV / XLSX / ICS
-- Config: `.env` / `.setting`
+- Config: `.env` / `~/.config/tduex/.setting` / `~/.config/tduex/.usersetting`
 - Install: Makefile / shell script
 
 ## **Project Structure**
@@ -44,7 +44,7 @@
 `tduex` が行う基本処理は以下です。
 
 1. 設定ファイルを読み込む
-2. 必要なら `USER_ID` と `PASSWORD` を入力して `.setting` に保存する
+2. 必要なら `USER_ID` と `PASSWORD` を入力して `~/.config/tduex/.usersetting` に保存する
 3. LMS から講義一覧または event 情報を取得する
 4. 指定形式で export する
 
@@ -78,7 +78,9 @@ go run ./cmd/tduex
 5. period
 6. export 形式
 
-`USER_ID` / `PASSWORD` が未設定なら、その前に入力を求めて `.setting` に保存します。
+`USER_ID` / `PASSWORD` が未設定なら、その前に入力を求めて `~/.config/tduex/.usersetting` に保存します。
+
+fetch に失敗した場合は、`.usersetting` の `USER_ID` / `PASSWORD` を確認するようメッセージを表示します。
 
 ### **CLI 実行**
 
@@ -178,12 +180,15 @@ tduex full -year 2025 -term 1 -format json,csv -dialog=false
 - `BASE_URL`
 - `LOGIN_URL`
 
-認証情報は `.setting` に保存できます。
+一般設定は `~/.config/tduex/.setting`、認証情報は `~/.config/tduex/.usersetting` に保存できます。  
+互換のため、カレントディレクトリの `.setting` / `.usersetting` もあれば読み込みます。
 
 - `USER_ID`
 - `PASSWORD`
 
 例:
+
+`~/.config/tduex/.setting`
 
 ```env
 ALLOW_DOMAIN=els.sa.dendai.ac.jp
@@ -191,12 +196,19 @@ BASE_URL=https://els.sa.dendai.ac.jp
 LOGIN_URL=https://els.sa.dendai.ac.jp/webclass/login.php
 ```
 
+`~/.config/tduex/.usersetting`
+
+```env
+USER_ID=your_user_id
+PASSWORD=your_password
+```
+
 ## **Technical Highlights**
 
 - scraping / parser / service / appconfig で責務を分離しています
 - `classes` と `full` の取得粒度を分けています
 - 複数形式への export を同じ取得結果からまとめて行えます
-- 資格情報が無ければ初回実行時に入力して `.setting` に保存できます
+- 資格情報が無ければ初回実行時に入力して `.usersetting` に保存できます
 - 保存ダイアログを使う GUI 形式と、CLI 的な自動保存の両方に対応しています
 - ログはコンソール出力のみです
 

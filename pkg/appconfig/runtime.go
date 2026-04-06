@@ -108,7 +108,19 @@ func PersistCredentials(path string, userID string, password string) error {
 		return err
 	}
 
-	data := fmt.Sprintf("USER_ID=%s\nPASSWORD=%s\n", userID, password)
+	lines, err := readEnvLines(path)
+	if err != nil && !errorsIsNotExist(err) {
+		return err
+	}
+
+	lines = upsertEnvLine(lines, "USER_ID", userID)
+	lines = upsertEnvLine(lines, "PASSWORD", password)
+
+	data := strings.Join(lines, "\n")
+	if data != "" {
+		data += "\n"
+	}
+
 	return os.WriteFile(path, []byte(data), 0600)
 }
 
@@ -138,4 +150,30 @@ func errorsIsNotExist(err error) bool {
 func isPathErrorNotExist(err error) bool {
 	var pathErr *fs.PathError
 	return err != nil && errors.As(err, &pathErr) && os.IsNotExist(pathErr)
+}
+
+func readEnvLines(path string) ([]string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	text := strings.ReplaceAll(string(data), "\r\n", "\n")
+	text = strings.TrimRight(text, "\n")
+	if text == "" {
+		return []string{}, nil
+	}
+	return strings.Split(text, "\n"), nil
+}
+
+func upsertEnvLine(lines []string, key string, value string) []string {
+	prefix := key + "="
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, prefix) {
+			lines[i] = prefix + value
+			return lines
+		}
+	}
+	return append(lines, prefix+value)
 }

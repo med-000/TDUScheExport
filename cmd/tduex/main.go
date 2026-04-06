@@ -98,7 +98,7 @@ func runClasses(args []string) error {
 
 	result, err := svc.FetchClassesForExport(req)
 	if err != nil {
-		return fmt.Errorf("failed to fetch class list: %w", err)
+		return wrapFetchError("failed to fetch class list", err)
 	}
 
 	paths := make([]string, 0, len(cfg.Formats))
@@ -148,7 +148,7 @@ func runFull(args []string) error {
 
 	result, err := svc.FetchFullForExport(req)
 	if err != nil {
-		return fmt.Errorf("failed to fetch full data: %w", err)
+		return wrapFetchError("failed to fetch full data", err)
 	}
 
 	paths := make([]string, 0, len(cfg.Formats))
@@ -194,7 +194,8 @@ func parseRuntimeConfig(mode string, args []string) (appconfig.RuntimeConfig, er
 	period := fs.Int("period", 0, "target period (0=all)")
 	formatsFlag := fs.String("format", defaultFormats(mode), "export format(s), comma-separated")
 	dotenvPath := fs.String("env", ".env", "path to .env file")
-	settingPath := fs.String("setting", ".setting", "path to credential setting file")
+	settingPath := fs.String("setting", appconfig.DefaultSettingPath(), "path to app setting file")
+	userSettingPath := fs.String("usersetting", appconfig.DefaultUserSettingPath(), "path to user credential setting file")
 	useDialog := fs.Bool("dialog", true, "show native save dialog")
 
 	fs.Usage = func() {
@@ -211,10 +212,23 @@ func parseRuntimeConfig(mode string, args []string) (appconfig.RuntimeConfig, er
 	if err := appconfig.LoadOptionalEnv(*settingPath); err != nil {
 		return appconfig.RuntimeConfig{}, fmt.Errorf("failed to load %s: %w", *settingPath, err)
 	}
+	if *settingPath != appconfig.LegacySettingPath() {
+		if err := appconfig.LoadOptionalEnv(appconfig.LegacySettingPath()); err != nil {
+			return appconfig.RuntimeConfig{}, fmt.Errorf("failed to load %s: %w", appconfig.LegacySettingPath(), err)
+		}
+	}
+	if err := appconfig.LoadOptionalEnv(*userSettingPath); err != nil {
+		return appconfig.RuntimeConfig{}, fmt.Errorf("failed to load %s: %w", *userSettingPath, err)
+	}
+	if *userSettingPath != appconfig.LegacyUserSettingPath() {
+		if err := appconfig.LoadOptionalEnv(appconfig.LegacyUserSettingPath()); err != nil {
+			return appconfig.RuntimeConfig{}, fmt.Errorf("failed to load %s: %w", appconfig.LegacyUserSettingPath(), err)
+		}
+	}
 	if err := appconfig.LoadOptionalEnv(*dotenvPath); err != nil {
 		return appconfig.RuntimeConfig{}, fmt.Errorf("failed to load %s: %w", *dotenvPath, err)
 	}
-	if err := ensureCredentials(*settingPath); err != nil {
+	if err := ensureCredentials(*userSettingPath); err != nil {
 		return appconfig.RuntimeConfig{}, err
 	}
 
@@ -247,14 +261,26 @@ func printUsage(out *os.File) {
 	fmt.Fprintln(out, "example: tduex full -year 2025 -term 1 -format json,csv,ics")
 }
 
-func ensureCredentials(settingPath string) error {
+func wrapFetchError(prefix string, err error) error {
+	if err == nil {
+		return nil
+	}
+
+	message := fmt.Sprintf("%s: %v", prefix, err)
+	if strings.Contains(strings.ToLower(err.Error()), "failed to fetch scraping") {
+		message += "\ncheck USER_ID and PASSWORD in .usersetting"
+	}
+	return fmt.Errorf("%s", message)
+}
+
+func ensureCredentials(userSettingPath string) error {
 	userID := strings.TrimSpace(os.Getenv("USER_ID"))
 	password := strings.TrimSpace(os.Getenv("PASSWORD"))
 	if userID != "" && password != "" {
 		return nil
 	}
 
-	fmt.Println("USER_ID or PASSWORD was not found. They will be saved to .setting.")
+	fmt.Println("USER_ID or PASSWORD was not found. They will be saved to .usersetting.")
 
 	if userID == "" {
 		value, err := promptString("USER_ID")
@@ -278,8 +304,8 @@ func ensureCredentials(settingPath string) error {
 		return err
 	}
 
-	if err := appconfig.PersistCredentials(settingPath, userID, password); err != nil {
-		return fmt.Errorf("failed to write %s: %w", settingPath, err)
+	if err := appconfig.PersistCredentials(userSettingPath, userID, password); err != nil {
+		return fmt.Errorf("failed to write %s: %w", userSettingPath, err)
 	}
 
 	return nil
