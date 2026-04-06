@@ -1,4 +1,4 @@
-module github.com/med-000/tduscheexport
+module github.com/med-000/tduex
 
 go 1.26.1
 

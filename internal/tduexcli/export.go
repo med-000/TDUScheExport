@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/med-000/tduscheexport/internal/appconfig"
-	"github.com/med-000/tduscheexport/internal/service"
+	"github.com/med-000/tduex/internal/appconfig"
+	"github.com/med-000/tduex/internal/service"
 )
 
 func exportClassesByFormat(svc *service.Service, result *service.ExportCourse, format string, path string) error {

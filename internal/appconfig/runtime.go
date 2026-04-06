@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/med-000/tduscheexport/internal/service"
+	"github.com/med-000/tduex/internal/service"
 )
 
 type RuntimeConfig struct {

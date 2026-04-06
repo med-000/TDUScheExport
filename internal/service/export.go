@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/med-000/tduscheexport/internal/parser"
+	"github.com/med-000/tduex/internal/parser"
 )
 
 func (s *Service) FetchAllAndExportJSON(req GetCourseRequest, savePath string) (*ExportCourse, error) {

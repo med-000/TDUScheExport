@@ -1,6 +1,6 @@
 package parser
 
-import "github.com/med-000/tduscheexport/internal/logger"
+import "github.com/med-000/tduex/internal/logger"
 
 type Parser struct {
 	log *logger.ParserLogger

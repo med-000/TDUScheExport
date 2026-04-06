@@ -18,7 +18,7 @@
 - Scraping: Colly / goquery
 - Export: JSON / CSV / XLSX / ICS
 - Config: `.env` / `~/.config/tduex/.setting` / `~/.config/tduex/.usersetting`
-- Install: Makefile / shell script
+- Install: GitHub Releases / PowerShell / Makefile / shell script
 
 ## **Project Structure**
 
@@ -34,7 +34,11 @@
 │   ├── service
 │   └── tduexcli
 ├── scripts
+│   ├── install.ps1
 │   └── install.sh
+├── .github
+│   └── workflows
+│       └── release.yml
 ├── Makefile
 ├── go.mod
 └── README.md
@@ -104,24 +108,42 @@ tduex --help
 
 ## **Install**
 
-### **最短**
+### **Windows**
 
-```bash
-go install ./cmd/tduex
+PowerShell だけでインストールできます。`Go` も `sh` も不要です。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-これが一番楽です。`GOBIN` または `$(go env GOPATH)/bin` に `tduex` が入ります。
+このスクリプトは GitHub Releases から `tduex.exe` を取得して、`%LOCALAPPDATA%\Programs\tduex\bin` に入れ、必要ならユーザー PATH に追加します。
+
+特定バージョンを入れたい場合:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version v0.1.0
+```
+
+### **macOS / Linux 最短**
+
+```bash
+go install github.com/med-000/tduex/cmd/tduex@latest
+```
+
+`GOBIN` または `$(go env GOPATH)/bin` に `tduex` が入ります。
 
 ### **Clone 後にインストール**
 
 ```bash
 git clone <repo>
-cd TDUScheExport
+cd tduex
 sh scripts/install.sh
 ```
 
 権限が不要な場所を自動で選んでインストールします。  
 `/usr/local/bin` が書けない場合は `~/.local/bin` などに入ります。
+
+Windows では `sh` が前提になるので、この手順ではなく `scripts/install.ps1` を使ってください。
 
 ### **Makefile**
 
@@ -141,6 +163,10 @@ make install
 make build
 ./tduex
 ```
+
+### **リリース配布**
+
+`v*` タグを push すると [release.yml](/Users/med/Documents/App_dev/product/tduex/.github/workflows/release.yml) が各 OS 向けバイナリを作り、GitHub Release に添付します。Windows の `install.ps1` はその配布物を使います。
 
 ## **Export Formats**
 

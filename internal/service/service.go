@@ -1,6 +1,6 @@
 package service
 
-import "github.com/med-000/tduscheexport/internal/logger"
+import "github.com/med-000/tduex/internal/logger"
 
 type Service struct {
 	log *logger.ServiceLogger

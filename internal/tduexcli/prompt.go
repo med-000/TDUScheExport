@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/med-000/tduscheexport/internal/appconfig"
+	"github.com/med-000/tduex/internal/appconfig"
 )
 
 func runInteractive() error {

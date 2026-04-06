@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/med-000/tduscheexport/internal/tduexcli"
+	"github.com/med-000/tduex/internal/tduexcli"
 )
 
 func main() {

@@ -1,0 +1,78 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: windows
+            goarch: amd64
+            asset_arch: x86_64
+            archive_ext: zip
+            bin_ext: .exe
+          - goos: windows
+            goarch: arm64
+            asset_arch: arm64
+            archive_ext: zip
+            bin_ext: .exe
+          - goos: darwin
+            goarch: amd64
+            asset_arch: x86_64
+            archive_ext: tar.gz
+            bin_ext: ""
+          - goos: darwin
+            goarch: arm64
+            asset_arch: arm64
+            archive_ext: tar.gz
+            bin_ext: ""
+          - goos: linux
+            goarch: amd64
+            asset_arch: x86_64
+            archive_ext: tar.gz
+            bin_ext: ""
+          - goos: linux
+            goarch: arm64
+            asset_arch: arm64
+            archive_ext: tar.gz
+            bin_ext: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build archive
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          ASSET_ARCH: ${{ matrix.asset_arch }}
+          ARCHIVE_EXT: ${{ matrix.archive_ext }}
+          BIN_EXT: ${{ matrix.bin_ext }}
+        run: |
+          mkdir -p dist build
+          BIN_NAME="tduex${BIN_EXT}"
+          ARCHIVE_NAME="tduex_$(printf '%s' "$GOOS" | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')_${ASSET_ARCH}.${ARCHIVE_EXT}"
+          GOOS="$GOOS" GOARCH="$GOARCH" CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o "build/${BIN_NAME}" ./cmd/tduex
+
+          if [ "$ARCHIVE_EXT" = "zip" ]; then
+            zip -j "dist/${ARCHIVE_NAME}" "build/${BIN_NAME}"
+          else
+            tar -C build -czf "dist/${ARCHIVE_NAME}" "${BIN_NAME}"
+          fi
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
