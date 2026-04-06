@@ -150,6 +150,19 @@ make build
 - `csv`
 - `xlsx`
 
+返る内容:
+
+- `json`
+  `externalId`, `year`, `term`, `classes[]`
+- `json` の `classes[]`
+  `externalId`, `day`, `period`, `title`
+- `csv`
+  1 行 1 講義
+- `csv` / `xlsx` の列
+  `externalId`, `year`, `term`, `day`, `period`, `title`
+- `xlsx`
+  `classes` シートに講義一覧を表形式で出力
+
 ### **full**
 
 - `json`
@@ -157,7 +170,24 @@ make build
 - `xlsx`
 - `ics`
 
-`ics` は event の日時が解釈できるものだけを書き出します。
+返る内容:
+
+- `json`
+  `externalId`, `year`, `term`, `classes[]`
+- `json` の `classes[]`
+  `externalId`, `day`, `period`, `title`, `events[]`
+- `json` の `events[]`
+  `externalId`, `name`, `category`, `date`, `groupName`
+- `csv`
+  1 行 1 event
+- `csv` / `xlsx` の列
+  `classExternalId`, `year`, `term`, `day`, `period`, `classTitle`, `eventExternalId`, `eventName`, `category`, `date`, `groupName`
+- `xlsx`
+  `events` シートに event 一覧を表形式で出力
+- `ics`
+  event の日時をカレンダーイベントとして出力
+
+`ics` は event の `date` が日時として解釈できるものだけを書き出します。
 
 ## **Save Dialog**
 
