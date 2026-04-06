@@ -1,0 +1,3 @@
+LOGIN_URL=https://els.sa.dendai.ac.jp/webclass/login.php
+BASE_URL=https://els.sa.dendai.ac.jp
+ALLOW_DOMAIN=els.sa.dendai.ac.jp

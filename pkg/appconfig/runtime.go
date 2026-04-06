@@ -2,7 +2,9 @@ package appconfig
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,11 +13,13 @@ import (
 )
 
 type RuntimeConfig struct {
-	Year   int
-	Term   int
-	Day    int
-	Period int
-	Mode   string
+	Year      int
+	Term      int
+	Day       int
+	Period    int
+	Mode      string
+	Formats   []string
+	UseDialog bool
 }
 
 func BuildRequest(cfg RuntimeConfig) (service.GetCourseRequest, string, error) {
@@ -89,6 +93,25 @@ func LoadDotEnv(path string) error {
 	return scanner.Err()
 }
 
+func LoadOptionalEnv(path string) error {
+	if err := LoadDotEnv(path); err != nil {
+		if errorsIsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	return nil
+}
+
+func PersistCredentials(path string, userID string, password string) error {
+	if err := ensureParentDir(path); err != nil {
+		return err
+	}
+
+	data := fmt.Sprintf("USER_ID=%s\nPASSWORD=%s\n", userID, password)
+	return os.WriteFile(path, []byte(data), 0600)
+}
+
 func BuildOutputPath(cfg RuntimeConfig, ext string) string {
 	name := fmt.Sprintf("%s_%d_%d", cfg.Mode, cfg.Year, cfg.Term)
 	if cfg.Day > 0 {
@@ -98,4 +121,21 @@ func BuildOutputPath(cfg RuntimeConfig, ext string) string {
 		name = fmt.Sprintf("%s_period%d", name, cfg.Period)
 	}
 	return filepath.Join("out", name+ext)
+}
+
+func ensureParentDir(path string) error {
+	dir := filepath.Dir(path)
+	if dir == "." {
+		return nil
+	}
+	return os.MkdirAll(dir, 0755)
+}
+
+func errorsIsNotExist(err error) bool {
+	return err != nil && (os.IsNotExist(err) || isPathErrorNotExist(err))
+}
+
+func isPathErrorNotExist(err error) bool {
+	var pathErr *fs.PathError
+	return err != nil && errors.As(err, &pathErr) && os.IsNotExist(pathErr)
 }
