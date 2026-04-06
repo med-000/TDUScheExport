@@ -47,7 +47,7 @@ func BuildRequest(cfg RuntimeConfig) (service.GetCourseRequest, string, error) {
 		return service.GetCourseRequest{}, "", fmt.Errorf("period must be 0 or greater")
 	}
 
-	return req, defaultOutputPath(cfg), nil
+	return req, BuildOutputPath(cfg, ".json"), nil
 }
 
 func LoadDotEnv(path string) error {
@@ -89,7 +89,7 @@ func LoadDotEnv(path string) error {
 	return scanner.Err()
 }
 
-func defaultOutputPath(cfg RuntimeConfig) string {
+func BuildOutputPath(cfg RuntimeConfig, ext string) string {
 	name := fmt.Sprintf("%s_%d_%d", cfg.Mode, cfg.Year, cfg.Term)
 	if cfg.Day > 0 {
 		name = fmt.Sprintf("%s_day%d", name, cfg.Day)
@@ -97,5 +97,5 @@ func defaultOutputPath(cfg RuntimeConfig) string {
 	if cfg.Period > 0 {
 		name = fmt.Sprintf("%s_period%d", name, cfg.Period)
 	}
-	return filepath.Join("out", name+".json")
+	return filepath.Join("out", name+ext)
 }

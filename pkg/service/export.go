@@ -13,13 +13,19 @@ func (s *Service) FetchAllAndExportJSON(req GetCourseRequest, savePath string) (
 	return s.FetchClassesAndExportJSON(req, savePath)
 }
 
-func (s *Service) FetchClassesAndExportJSON(req GetCourseRequest, savePath string) (*ExportCourse, error) {
+func (s *Service) FetchClassesForExport(req GetCourseRequest) (*ExportCourse, error) {
 	course, err := s.FetchClasses(req)
 	if err != nil {
 		return nil, err
 	}
+	return convertCourseForExport(course), nil
+}
 
-	exportCourse := convertCourseForExport(course)
+func (s *Service) FetchClassesAndExportJSON(req GetCourseRequest, savePath string) (*ExportCourse, error) {
+	exportCourse, err := s.FetchClassesForExport(req)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.ExportCourseJSON(exportCourse, savePath); err != nil {
 		return nil, err
 	}
@@ -27,13 +33,19 @@ func (s *Service) FetchClassesAndExportJSON(req GetCourseRequest, savePath strin
 	return exportCourse, nil
 }
 
-func (s *Service) FetchFullAndExportJSON(req GetCourseRequest, savePath string) (*FullExportCourse, error) {
+func (s *Service) FetchFullForExport(req GetCourseRequest) (*FullExportCourse, error) {
 	course, err := s.FetchFull(req)
 	if err != nil {
 		return nil, err
 	}
+	return convertFullCourseForExport(course), nil
+}
 
-	exportCourse := convertFullCourseForExport(course)
+func (s *Service) FetchFullAndExportJSON(req GetCourseRequest, savePath string) (*FullExportCourse, error) {
+	exportCourse, err := s.FetchFullForExport(req)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.ExportFullCourseJSON(exportCourse, savePath); err != nil {
 		return nil, err
 	}
