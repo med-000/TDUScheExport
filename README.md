@@ -1,13 +1,16 @@
 # **tduex**
 
-東京電機大学の webclass から講義一覧やイベント情報を取得して、  
+東京電機大学の webclass から講義一覧やイベント情報を取得して、\
 複数形式で export する CLI ツールです。
 
 ## **Overview**
 
 - webclss の時間割や講義ページを手作業で確認する手間を減らすために作成しました。
+
 - 講義一覧だけを取るモードと、event まで辿って取得するモードを切り替えられます。
+
 - export 形式は `JSON` / `CSV` / `XLSX` / `ICS` に対応しています。
+
 - macOS では Finder 系、Windows では Explorer 系の保存ダイアログから保存先を選べます。
 
 ## **Architecture**
@@ -15,9 +18,13 @@
 ### **Tech Stack**
 
 - Backend: Go
+
 - Scraping: Colly / goquery
+
 - Export: JSON / CSV / XLSX / ICS
+
 - Config: `.env` / `~/.config/tduex/.setting` / `~/.config/tduex/.usersetting`
+
 - Install: GitHub Releases / PowerShell / Makefile / shell script
 
 ## **Project Structure**
@@ -59,6 +66,7 @@
 
 - `tduex classes`
   講義一覧だけを取得して export
+
 - `tduex full`
   講義ごとの event まで辿って export
 
@@ -83,7 +91,7 @@ go run ./cmd/tduex
 5. period
 6. export 形式
 
-`USER_ID` / `PASSWORD` が未設定なら、その前に入力を求めて `~/.config/tduex/.usersetting` に保存します。  
+`USER_ID` / `PASSWORD` が未設定なら、その前に入力を求めて `~/.config/tduex/.usersetting` に保存します。\
 fetch に失敗した場合は、`.usersetting` の `USER_ID` / `PASSWORD` を確認するようメッセージを表示します。
 
 ### **CLI 実行**
@@ -110,15 +118,17 @@ tduex --help
 
 ### **Windows**
 
-PowerShell だけでインストールできます。`Go` も `sh` も不要です。
+正式な配布物は GitHub Releases の Windows 用 zip です。`Go` も `sh` も不要です。
+
+まずは `tduex_Windows_x86_64.zip` をダウンロードして展開し、中の `tduex.exe` を使ってください。これが一番失敗しにくいです。
+
+補助として PowerShell スクリプトでも同じ zip を自動取得できます。
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-このスクリプトは GitHub Releases から `tduex.exe` を取得して、`%LOCALAPPDATA%\Programs\tduex\bin` に入れ、必要ならユーザー PATH に追加します。
-
-まだ Release を作っていない開発中の状態では、リポジトリ直下の `tduex.exe` か `dist\tduex.exe` も使えます。`Go` が入っていれば最後にローカルビルドへフォールバックします。
+このスクリプトは GitHub Releases から zip を取得して展開し、`%LOCALAPPDATA%\Programs\tduex\bin` に `tduex.exe` を入れ、必要ならユーザー PATH に追加します。
 
 特定バージョンを入れたい場合:
 
@@ -126,11 +136,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Version v0.1.0
 ```
 
-手元の exe を使いたい場合:
+手元にある exe を入れたい場合:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1 -SourceExe .\tduex.exe
 ```
+
+Release がまだ無い開発中の状態では、`Go` が入っていれば最後にローカルビルドへフォールバックします。
 
 ### **macOS / Linux 最短**
 
@@ -148,7 +160,7 @@ cd tduex
 sh scripts/install.sh
 ```
 
-権限が不要な場所を自動で選んでインストールします。  
+権限が不要な場所を自動で選んでインストールします。\
 `/usr/local/bin` が書けない場合は `~/.local/bin` などに入ります。
 
 Windows では `sh` が前提になるので、この手順ではなく `scripts/install.ps1` を使ってください。
@@ -181,15 +193,19 @@ make build
 ### **classes**
 
 - `json`
+
 - `csv`
+
 - `xlsx`
 
 返る内容:
 
 - `json`
   `externalId`, `year`, `term`, `classes[]`
+
 - `json` の `classes[]`
   `externalId`, `day`, `period`, `title`
+
 - `json` の例
 
 ```json
@@ -210,26 +226,34 @@ make build
 
 - `csv`
   1 行 1 講義
+
 - `csv` / `xlsx` の列
   `externalId`, `year`, `term`, `day`, `period`, `title`
+
 - `xlsx`
   `classes` シートに講義一覧を表形式で出力
 
 ### **full**
 
 - `json`
+
 - `csv`
+
 - `xlsx`
+
 - `ics`
 
 返る内容:
 
 - `json`
   `externalId`, `year`, `term`, `classes[]`
+
 - `json` の `classes[]`
   `externalId`, `day`, `period`, `title`, `events[]`
+
 - `json` の `events[]`
   `externalId`, `name`, `category`, `date`, `groupName`
+
 - `json` の例
 
 ```json
@@ -259,10 +283,13 @@ make build
 
 - `csv`
   1 行 1 event
+
 - `csv` / `xlsx` の列
   `classExternalId`, `year`, `term`, `day`, `period`, `classTitle`, `eventExternalId`, `eventName`, `category`, `date`, `groupName`
+
 - `xlsx`
   `events` シートに event 一覧を表形式で出力
+
 - `ics`
   event の日時をカレンダーイベントとして出力
 
@@ -272,6 +299,7 @@ make build
 
 - macOS
   Finder 系の保存ダイアログを表示
+
 - Windows
   Explorer 系の保存ダイアログを表示
 
@@ -286,7 +314,9 @@ tduex full -year 2025 -term 1 -format json,csv -dialog=false
 主に必要なものは以下です。
 
 - `ALLOW_DOMAIN`
+
 - `BASE_URL`
+
 - `LOGIN_URL`
 
 例:
@@ -306,16 +336,21 @@ USER_ID=your_user_id
 PASSWORD=your_password
 ```
 
-一般設定は `~/.config/tduex/.setting`、認証情報は `~/.config/tduex/.usersetting` に保存できます。  
+一般設定は `~/.config/tduex/.setting`、認証情報は `~/.config/tduex/.usersetting` に保存できます。\
 互換のため、カレントディレクトリの `.setting` / `.usersetting` もあれば読み込みます。
 
 ## **Technical Highlights**
 
 - scraping / parser / service / appconfig で責務を分離しています
+
 - `classes` と `full` の取得粒度を分けています
+
 - 複数形式への export を同じ取得結果からまとめて行えます
+
 - 資格情報が無ければ初回実行時に入力して `.usersetting` に保存できます
+
 - 保存ダイアログを使う GUI 形式と、CLI 的な自動保存の両方に対応しています
+
 - ログはコンソール出力のみです
 
 ## **License**

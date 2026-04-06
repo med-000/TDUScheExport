@@ -29,30 +29,18 @@ function Get-ReleaseUrl {
     return "https://github.com/$RepoName/releases/download/$ReleaseVersion/$AssetName"
 }
 
-function Find-LocalExe {
+function Resolve-SourceExe {
     param([string]$PreferredPath)
 
-    if ($PreferredPath) {
-        if (Test-Path $PreferredPath) {
-            return (Resolve-Path $PreferredPath).Path
-        }
-        throw "Specified -SourceExe was not found: $PreferredPath"
+    if (-not $PreferredPath) {
+        return $null
     }
 
-    $repoRoot = Split-Path -Parent $PSScriptRoot
-    $candidates = @(
-        (Join-Path $repoRoot "tduex.exe"),
-        (Join-Path $repoRoot "dist\tduex.exe"),
-        (Join-Path $repoRoot "build\tduex.exe")
-    )
-
-    foreach ($candidate in $candidates) {
-        if (Test-Path $candidate) {
-            return (Resolve-Path $candidate).Path
-        }
+    if (Test-Path $PreferredPath) {
+        return (Resolve-Path $PreferredPath).Path
     }
 
-    return $null
+    throw "Specified -SourceExe was not found: $PreferredPath"
 }
 
 function Install-Exe {
@@ -132,7 +120,7 @@ $downloaded = $false
 $builtExePath = $null
 
 try {
-    $localExe = Find-LocalExe -PreferredPath $SourceExe
+    $localExe = Resolve-SourceExe -PreferredPath $SourceExe
     if ($localExe) {
         Write-Host "Using local executable: $localExe"
         Install-Exe -ExePath $localExe -TargetDir $InstallDir -Overwrite $Force.IsPresent
@@ -164,7 +152,7 @@ catch {
             return
         }
 
-        Write-Error "Failed to download release asset '$assetName'. Put tduex.exe in the repo root and rerun, use -SourceExe, or publish a GitHub release asset with that name."
+        Write-Error "Failed to download release asset '$assetName' from '$downloadUrl'. Download that zip from GitHub Releases and extract tduex.exe manually, or rerun with -SourceExe."
     }
 
     throw
